@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <style>
+        body{ margin:0; padding:0; }
+        #drag{ position:absolute; width:100px; height:100px; background:#0094ff; top:300px; left:400px;
+        }
+    </style>
+    <script>
+        window.onload = function () {
+
+            var oDiv = document.getElementById('drag');
+
+            //1. 鼠标按下激活拖拽
+            oDiv.onmousedown = function (ev) {
+                var oEv = window.event || ev;
+                var distLeft = oEv.clientX - oDiv.offsetLeft;
+                var distTop = oEv.clientY - oDiv.offsetTop;
+
+                //问题1：鼠标拖动太快导致鼠标坐标脱离div 使div不再移动
+                //将鼠标事件加在整个页面上 也就是document上面
+
+                //鼠标移动 拖拽开始
+                document.onmousemove = function (ev) {
+                    var oEv = window.event || ev;
+                    var l = oEv.clientX - distLeft;
+                    var t = oEv.clientY - distTop;
+
+                    var maxL = document.documentElement.clientWidth - oDiv.offsetWidth;
+                    var maxT = document.documentElement.clientHeight - oDiv.offsetHeight;
+
+                    //问题2：拖动div要在窗口边界加限制以避免div被拖离窗口
+
+                    l = l < 0 ? 0 : l;
+                    l = l > maxL ? maxL : l;
+                    t = t < 0 ? 0 : t;
+                    t = t > maxT ? maxT : t;
+
+                    oDiv.style.left = l + 'px';
+                    oDiv.style.top = t + 'px';
+                };
+                //鼠标释放事件同样加在document
+                document.onmouseup = function () {
+                    document.onmousemove = null;
+                    document.onmousedown = null;
+                };
+                return false;
+            };
+        };
+    </script>
+</head>
+<body>
+    <div id="drag"></div>
+</body>
+</html>
