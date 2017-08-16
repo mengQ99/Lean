@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+	<style type="text/css">
+		body { margin: 0; padding: 0; }
+        .wrap { width: 366px; margin: 0 auto; }
+        .wrap div { float: left; width: 100px; height: 80px; margin: 10px; border: 1px solid #ccc; cursor: pointer; background-clip: padding-box; }
+        .wrap .active { border: 1px dashed #000; }
+	</style>
+    <script src="../js/move2.js"></script>
+	<script>
+        /*
+            1. 布局转换
+            2. 简单拖拽
+            3. 碰撞检测
+            4. 找到距离最近的碰撞对象
+            5. 位置互换索引互换
+        */
+        window.onload = function () {
+            
+            var oWrap = document.querySelector('.wrap');
+            var aDiv = oWrap.getElementsByTagName('div');
+            var aPos = [];
+            var i = 0;
+            var len = aDiv.length;
+            var minIndex = 2;
+
+            // 布局转换
+            for (i = 0; i < len; i++) {
+
+                aPos[i] = { left: aDiv[i].offsetLeft, top: aDiv[i].offsetTop };
+            }
+            for (i = 0; i < len; i++) {
+
+                aDiv[i].style.left = aPos[i].left + 'px';
+                aDiv[i].style.top = aPos[i].top + 'px';
+
+                aDiv[i].style.backgroundColor = getRandomColor();
+                aDiv[i].style.position = 'absolute';
+                aDiv[i].style.margin = '0';
+
+                aDiv[i].index = i;
+                setDrag(aDiv[i]);
+            }
+            // 获取随机颜色函数
+            function getRandomColor() {
+                return '#' + ('00000' + (Math.random() * 0x1000000 << 0).toString(16)).slice(-6);
+            }
+            // 拖拽
+            function setDrag(obj) {
+
+                var oNear = null;
+
+                obj.onmousedown = function(e){
+                    var l = e.clientX - obj.offsetLeft;
+                    var t = e.clientY - obj.offsetTop;
+
+                    document.onmousemove = function (e) {
+
+                        obj.style.zIndex = minIndex++;
+                        obj.style.left = e.clientX - l + 'px';
+                        obj.style.top = e.clientY - t + 'px';
+
+                        for (i = 0; i < len; i++) {
+                            aDiv[i].className = '';
+                        }
+                        oNear = findNearest(obj);
+                        if (oNear) {
+                            oNear.className = 'active';
+                        }
+                    };
+
+                    document.onmouseup = function(){
+                        document.onmousemove = null;
+                        document.onmouseup = null;
+
+                        if (oNear) {
+                            
+                            startMove(obj, aPos[oNear.index]);
+                            startMove(oNear, aPos[obj.index]);
+                            oNear.className = '';
+                            //交换index
+                            obj.index += oNear.index;
+                            oNear.index = obj.index - oNear.index;
+                            obj.index -= oNear.index;
+
+                            oNear.style.zIndex = minIndex++;
+                            obj.style.zIndex = minIndex++;
+
+                        } else {
+                            startMove(obj, aPos[obj.index]);
+                        }
+                    };
+                    clearInterval(obj.timer);
+                    return false;
+                };
+            }
+            /**
+             * 对两个dom对象进行碰撞检测
+             * @params {obj} 需要检验的第一个dom对象
+             * @params {obj} 需要检验的第二个dom对象
+             * @return 碰撞返回true 无碰撞返回false
+             */
+            function crashTest(obj1, obj2) {
+                var tLine1 = obj1.offsetTop;
+                var rLine1 = obj1.offsetLeft + obj1.offsetWidth;
+                var bLine1 = obj1.offsetTop + obj1.offsetHeight;
+                var lLine1 = obj1.offsetLeft;
+
+                var tLine2 = obj2.offsetTop;
+                var rLine2 = obj2.offsetLeft + obj2.offsetWidth;
+                var bLine2 = obj2.offsetTop + obj2.offsetHeight;
+                var lLine2 = obj2.offsetLeft;
+
+                if (rLine1 < lLine2 || bLine1 < tLine2 || lLine1 > rLine2 || tLine1 > bLine2) {
+                    return false;
+                }
+                return true;
+            }
+            //勾股定理获得直线距离
+            function getDistance(obj1, obj2) {
+                var a = obj1.offsetLeft - obj2.offsetLeft;
+                var b = obj1.offsetTop - obj2.offsetTop;
+                return Math.sqrt(a * a + b * b);
+            }
+            //获得碰撞且最近距离的对象
+            function findNearest(obj) {
+                var min = 99999;
+                var index = -1;
+                for (i = 0; i < len; i++) {
+                    if (obj == aDiv[i])
+                        continue;
+                    if (crashTest(obj, aDiv[i])) {
+                        var dis = getDistance(obj, aDiv[i]);
+                        if (dis < min) {
+                            min = dis;
+                            index = i;
+                        }
+                    }
+                }
+                if (index !== -1) {
+                    return aDiv[index];
+                }
+                return null;
+            }
+        };
+	</script>
+</head>
+<body>
+	<div class="wrap">
+		<div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+	</div>
+</body>
+</html>
