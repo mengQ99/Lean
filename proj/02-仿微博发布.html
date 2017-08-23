@@ -1,0 +1,331 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+	<meta charset="utf-8" />
+    <style>
+        body, ul, li, p, h2, h3 {  margin: 0; padding: 0; }
+        ul, li { list-style: none; }
+        a { text-decoration: none; }
+        img { display: block; }
+        input, textarea, button { outline: none; }
+        textarea { resize:none; overflow:auto; }
+
+        .clear:after { clear: both; display: block; content: ''; height: 0; visibility: hidden; }
+
+        body { padding: 20px 0; background-color: rgba(139, 195, 74, 0.63); font-family: 'microsoft yahei'; line-height: 1.5; font-size: 14px; color: #444; }
+        .outer { padding-left: calc(100vw - 100%); }
+        .container { width: 470px; padding: 0 15px;  margin: 0 auto; background-color: #fff; border-radius: 5px; border: 1px solid transparent; }
+        .container h2, .content div, .list { margin-top: 10px; margin-bottom: 10px;  }
+
+        .con-name, .con-txt { padding: 5px 12px; border: 1px solid #808080; border-radius: 3px; }
+        .con-name:focus, .con-txt:focus { box-shadow: 0 0 1px #444; }
+        .con-name { width: 150px; height: 20px; }
+        .con-txt { overflow: hidden; width: calc(100% - 24px); height: 80px; font-size: 14px; line-height: 1.5; font-family: inherit; color: #444; }
+        .con-face { float: right; }
+        .con-face li { display: inline-block; }
+        .con-face img{ box-sizing: border-box; width: 30px; height: 30px; border-radius: 50%; opacity: .5; }
+        .con-face img:hover { opacity: 1; }
+        .con-face img.active { opacity: 1; }
+        .con-send { float: right; }
+        .con-send .send { width: 100px; height: 30px; margin-left: 10px; background-color: #8BC34A; border: none; border-radius: 3px; color: rgba(255, 255, 255, 0.78); font-size: 16px;  }
+        .con-send .send:hover { box-shadow: 0 0 1px #8BC34A; }
+        .con-send span { font-size: 16px; }
+        .con-send .max { font-size: 20px; }
+
+        .list {  border-top: 1px dashed #ccc; }
+        .list-item li { overflow: hidden; width: 470px; padding: 10px 0; border-bottom: 1px dashed #ccc; }
+        .item-pic, .item-box { float: left;  }
+        .item-pic { width: 60px; }
+        .item-pic img { width: 60px; height: 60px; border-radius: 50%; }
+        .item-box { width: 400px; margin-left: 10px; font-size: 14px; }
+        .item-box .name { display: inline; color: #1179CC; }
+        .item-box .name:hover { text-decoration: underline; }
+        .item-box .info { display: inline;  }
+        .item-box .time { padding: 5px 0; font-size: 12px; color: #ccc; }
+        .item-box .del {  display: none; float: right; margin-right:10px; color: #889DB6; }
+        .item-box .del:hover { text-decoration: underline; } 
+    </style>
+    <script>
+        // 类名选择器
+        function getByClass(oParent, sClass) {
+            var aLi = oParent.getElementsByTagName('*');
+            var reClass = new RegExp("(^| )" + sClass + "( |$)");
+            var res = [];
+            for (var i = 0; i < aLi.length; i++) {
+                reClass.test(aLi[i].className) && res.push(aLi[i]);
+            }
+            return res;
+        }
+        // 获取样式
+        function getStyle(obj, attr) {
+            return obj.currentStyle ? obj.currentStyle[attr] : getComputedStyle(obj, false)[attr];
+        }
+        // 运动框架
+        function startMove(obj, json, fn) {
+
+            clearInterval(obj.timer);
+            obj.timer = setInterval(function () {
+
+                var bStop = true;
+
+                for (var attr in json) {
+
+                    var iCur = 0;
+
+                    if (attr == 'opacity') {
+                        iCur = parseInt(parseFloat(getStyle(obj, attr)) * 100);
+                    } else {
+                        iCur = parseInt(getStyle(obj, attr));
+                    }
+
+                    var iSpeed = (json[attr] - iCur) / 6;
+                    iSpeed = iSpeed > 0 ? Math.ceil(iSpeed) : Math.floor(iSpeed);
+
+                    if (iCur != json[attr]) {
+                        bStop = false;
+                    }
+
+                    if (attr == 'opacity') {
+                        obj.style.filter = 'alpha(opacity:' + (iCur + iSpeed) + ')';
+                        obj.style.opacity = (iCur + iSpeed) / 100;
+                    } else {
+                        obj.style[attr] = iCur + iSpeed + 'px';
+                    }
+                }
+
+                if (bStop) {
+                    clearInterval(obj.timer);
+                    if (fn) {
+                        fn();
+                    }
+                }
+            }, 30);
+        }
+
+        window.onload = function () {
+            var oName = getByClass(document, 'con-name')[0];
+            var oTxt = getByClass(document, 'con-txt')[0];
+            var oUl = getByClass(document, 'list-item')[0];
+            var aLi = oUl.getElementsByTagName('li');
+            var oFace = getByClass(document, 'con-face')[0];
+            var aImg = oFace.getElementsByTagName('img');
+            var oSend = getByClass(document, 'send')[0];
+            var aDel = getByClass(oUl, 'del');
+            var oMax = getByClass(document, 'max')[0];
+            var oCount = getByClass(document, 'count')[0];
+            var oLi = null;
+            var maxNum = 140;
+
+            var i, j,
+                sSrc,  //头像路径
+                sDate, //时间
+                sName, //昵称
+                sTxt,  //内容
+                date = new Date();
+
+            //头像hover
+            for (i = 0; i < aImg.length; i++) {
+                aImg[i].onclick = function () {
+                    for (j = 0; j < aImg.length; j++) {
+                        aImg[j].className = '';
+                    }
+                    this.className = 'active';
+                };
+            }
+
+            //改变限制数字
+            oTxt.onchange = oTxt.onkeyup = oTxt.onfocus = oTxt.onblur = fnLimit;
+
+            //点击发送
+            oSend.onclick = fnSend;
+
+            //快捷键发送
+            document.onkeyup = function (e) {
+                var e = e || window.event;
+                e.keyCode == 13 && e.ctrlKey && fnSend();
+            };
+
+            //微博hover函数
+            function fnHover() {
+                for (i = 0; i < aLi.length; i++) {
+                    //aLi[i].index = i;
+                    var oDel = null;
+                    aLi[i].onmouseover = function () {
+                        this.style.backgroundColor = '#eee';
+                        oDel = getByClass(this, 'del')[0];
+                        oDel.style.display = 'block';
+                    };
+                    aLi[i].onmouseout = function () {
+                        this.style.backgroundColor = '';
+                        oDel = getByClass(this, 'del')[0];
+                        oDel.style.display = 'none';
+                    };
+                }
+            }
+            fnHover();
+
+            //微博删除函数            
+            function fnDel() {
+                var aDel = getByClass(oUl, 'del');
+
+                for (i = 0; i < aDel.length; i++) {
+
+                    aDel[i].onclick = function () {
+                        var oParent = this.parentNode.parentNode.parentNode;
+                        var iHeight = oParent.offsetHeight;
+
+                        startMove(oParent, { opacity: 0 }, function () {
+                            startMove(oParent, { height: 0, padding: 0 }, function () {
+                                oUl.removeChild(oParent);
+                            });
+                        });
+                        this.onclick = null;
+                    };
+                }
+            }
+            fnDel();
+
+            //字数限制函数
+            function fnLimit() {
+                var len = oTxt.value.length;
+                var n = Math.abs(maxNum - len);
+                oMax.innerHTML = ' ' + n.toString() + ' ';
+                if (maxNum - len < 0) {
+                    oCount.innerHTML = '已超出';
+                    oSend.disabled = true;
+                } else {
+                    oCount.innerHTML = '还可以输入';
+                    oSend.disabled = false;
+                }
+            }
+
+            //格式化时间 一位数时补零
+            function format(str){
+                return str.toString().replace(/^(\d)$/, "0$1");
+            }
+            
+            //微博发送函数
+            function fnSend() {
+                var iHeight;
+
+                sName = oName.value;
+                sTxt = oTxt.value;
+
+                if (sName === '') {
+                    alert('昵称不能为空');
+                    return;
+                }else if (sTxt === '') {
+                    alert('微博内容不能为空');
+                    return;
+                }
+
+                sDate = `${format(date.getMonth() + 1)}月${format(date.getDate())}日 ${format(date.getHours())}:${format(date.getMinutes())}`;
+                sSrc = getByClass(oFace, 'active')[0].src;
+
+                oLi = document.createElement('li');
+                oLi.innerHTML = `<div class="item-pic"><img src=${sSrc}></div><div class="item-box"><a class="name" href="javascript:;">${sName}</a>：<div class="info">${sTxt}</div><div class="time"><span>${sDate}</span><a class="del" href="javascript:;">删除</a></div></div>`;
+                oLi.style.opacity = 0;
+
+                aLi.length ? oUl.insertBefore(oLi, aLi[0]) : oUl.appendChild(oLi);
+
+                //保存元素高度
+                iHeight = oLi.offsetHeight - parseInt(getStyle(oLi, 'paddingTop')) - parseInt(getStyle(oLi, 'paddingBottom')) - 1;
+                oLi.style.height = 0;
+
+                startMove(oLi, { height: iHeight }, function () {
+                    startMove(oLi, { opacity: 100 });
+                });
+
+                fnHover();
+                fnDel();
+
+                oName.value = '';
+                oTxt.value = '';
+                oMax.innerHTML = ' ' + maxNum + ' ';
+
+                return false;
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="outer">
+        <div class="container">
+            <h2>随时随地发现新鲜事</h2>
+            <!-- 微博发送区域 -->
+            <form class="content clear">
+                <div>
+                    <input class="con-name" type="text">
+                    <ul class="con-face">
+                        <li><img class="active" src="../img/face2.jpg"></li>
+                        <li><img src="../img/face2.jpg"></li>
+                        <li><img src="../img/face3.jpg"></li>
+                        <li><img src="../img/face4.jpg"></li>
+                        <li><img src="../img/face5.jpg"></li>
+                        <li><img src="../img/face6.jpg"></li>
+                        <li><img src="../img/face7.jpg"></li>
+                        <li><img src="../img/face8.jpg"></li>
+                    </ul>
+                </div>
+                <div>
+                    <textarea class="con-txt"></textarea>
+                </div>
+                <div class="con-send">
+                    <span class="count">还可以输入</span><em class="max"> 140 </em><span>个字</span>
+                    <button class="send" title="Enter + Ctrl">发 送</button>
+                </div>
+            </form>
+            <!-- 微博显示区域 -->
+            <div class="list clear">
+                <ul class="list-item">
+                    <li>
+                        <!-- 微博头像 -->
+                        <div class="item-pic">
+                            <img src="../img/face1.jpg">
+                        </div>
+                        <!-- 微博内容 -->
+                        <div class="item-box">
+                            <a class="name" href="javascript:;">几日余生</a>：
+                            <div class="info">随时随地发现新鲜事</div>
+                            <div class="time">
+                                <span>08月25日 16:16</span>
+                                <a class="del" href="javascript:;">删除</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="item-pic">
+                            <img src="../img/face1.jpg">
+                        </div>
+                        <div class="item-box">
+                            <a class="name" href="javascript:;">几日余生</a>：
+                            <div class="info">padding-left:100vw - 100%解决滚动条出现页面抖动问题</div>
+                            <div class="time">
+                                <span>08月25日 16:16</span>
+                                <a class="del" href="javascript:;">删除</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="item-pic">
+                            <img src="../img/face1.jpg">
+                        </div>
+                        <div class="item-box">
+                            <a class="name" href="javascript:;">几日余生</a>：
+                            <div class="info">几日余生</div>
+                            <div class="time">
+                                <span>08月25日 16:16</span>
+                                <a class="del" href="javascript:;">删除</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
