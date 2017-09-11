@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<style type="text/css">
+		body, ul, li, h2 { margin: 0; padding: 0; }
+		a { text-decoration: none; color: #444; }
+
+		.fl { float: left; }
+		.fr { float: right; }
+		.clear:after { clear: both; display: block; content: ''; height: 0; visibility: hidden; }
+		.btn, .txt { padding: 5px 10px; background-color: #fff; border: 1px solid #808080; border-radius: 3px; }
+		.btn { border-color: #2196f3; }
+		input { display: inline-block; outline: none; margin-right: 20px; }
+
+		body { background-color: #eee; padding-top: 100px; }
+		.wrap { position: fixed; top: 0; width: 100%; height: 50px;overflow: hidden; box-shadow: 0 0 3px 1px #ccc; }
+		.nav, .qst { position: relative; top: 0; }
+		.nav { width: 100%; height: 50px;  background-color: #fff; }
+		.nav ul { float: left; margin-left: 50px; }
+		.nav li { display: inline-block; padding: 15px; font-weight: 700; }
+		.qst { height: 50px; background-color: #fff; }
+		.qst h2 { height: 50px; margin-left: 50px; line-height: 50px; }
+		.qst div, .nav .form { line-height: 50px; }
+		
+	</style>
+	<script type="text/javascript">
+		//行间样式
+		function getStyle(obj, attr){
+			return obj.currentStyle ? obj.currentStyle[attr] : getComputedStyle(obj, null)[attr];
+		}
+		//简单运动函数
+		function fnMove(obj, iTarget, callback){
+			clearInterval(obj.timer);
+			obj.timer = setInterval(function(){
+				var iCur = parseInt(getStyle(obj, 'top'));
+				var iSpeed = (iTarget - iCur) / 5;
+				iSpeed = iSpeed > 0 ? Math.ceil(iSpeed) : Math.floor(iSpeed);
+				if(iTarget == iCur){
+					clearInterval(obj.timer);
+					callback && callback(obj);
+				}else{
+					obj.style.top = iSpeed + iCur + 'px';
+				}
+			}, 30);
+		}
+
+		window.onload = function(){
+			var oQst = document.querySelector('.qst');
+			var oNav = document.querySelector('.nav');
+			
+			//普通浏览器 滚轮增量上正下负 ff反之
+			if((navigator.userAgent.toLowerCase().indexOf("firefox") != -1)){
+				document.addEventListener('DOMMouseScroll', fnScroll, false);
+			}else{
+				document.addEventListener('mousewheel', fnScroll, false);
+			}
+
+			function fnScroll(ev){
+				var ev = ev || window.event;
+				var sTop = document.body.scrollTop || document.documentElement.scrollTop;
+				var wheel = ev.wheelDelta ? ev.wheelDelta : -ev.detail;
+				if(wheel < 0 && sTop > 200){
+					fnMove(oNav, -50);
+					fnMove(oQst, -50);
+				}else{
+					fnMove(oNav, 0);
+					fnMove(oQst, 0);
+				}
+			}
+		};
+	</script>
+</head>
+<body>
+<div class="wrap">
+	<!-- 默认显示区 -->
+	<div class="nav">
+		<ul>
+			<li><a href="javascript:;">首页</a></li>
+			<li><a href="javascript:;">发现</a></li>
+			<li><a href="javascript:;">话题</a></li>
+			<li><a href="javascript:;">关于</a></li>
+		</ul>
+		<div class="form fr">
+			<input class="txt" type="text" placeholder="搜索你感兴趣的内容..." >
+			<input class="btn" type="button" value="提问" >		
+		</div>
+	</div>
+	
+	<!-- 页面向下滚动切换区 -->
+	<div class="qst">
+		<h2 class="fl"><a href="https://www.zhihu.com/question/28923765">人在年轻的时候一定要奋斗吗?</a></h2>
+		<div class="fr">
+			<input class="btn" type="button" value="关注问题">
+			<input class="btn" type="button" value="写回答">		
+		</div>
+	</div>	
+</div>
+<ul style="position: fixed;">
+	<li>1. 仿知乎问题页面 页面下滚导航条改变</li>
+	<li>2. 兼容Firefox(DOMMouseScroll事件)</li>
+</ul>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</body>
+</html>

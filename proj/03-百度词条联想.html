@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+	<style type="text/css">
+		body, ul, li { margin: 0; padding: 0; }
+		li { list-style: none; }
+		input { outline: none; }
+
+		.wrap { margin: 20px; }
+		.txt { width: 300px; height: 30px; padding: 5px 15px; font-size: 16px; line-height: 30px; border: 1px solid #808080; }
+		.btn { height: 42px; padding: 0 20px; background: #2196F3; color: #fff;font-size: 16px; vertical-align: top; border: none; cursor: pointer; } 
+		.word { width: 330px; display: none; border: 1px solid #ccc; border-top: none; }
+		.word li { padding: .3em .6em; }
+		.word a { display: block; text-decoration: none; color: #333; }
+		.word li:hover { background-color: #eee; }
+		.word li.active { background-color: #eee; }
+	</style>
+</head>
+<body>
+	<ol class="info">
+		<li>1. 输入搜索内容出现百度联想词条</li>
+		<li>2. 快捷键发送转到对应页面</li>
+		<li>3. 键盘上下方向键选中词条</li>
+	</ol>
+	<div class="wrap">
+		<input class="txt" type="text" >
+		<input class="btn" type="button" value="搜 索" >
+		<ul class="word">
+		</ul>		
+	</div>
+
+	<script type="text/javascript">
+		//类名选择
+		function $(sClass){
+			return document.getElementsByClassName(sClass)[0];
+		}	
+
+		//josnp callback函数
+		function callback(data){
+			var aWord = data.s;
+			var html = '';
+			
+			for(var i = 0; i < aWord.length; i++){
+				html += `<li><a href="http://www.baidu.com/s?wd=${aWord[i]}">${aWord[i]}</a></li>`;
+			}
+			
+			oUl.innerHTML = html;
+			aLi = oUl.getElementsByTagName('li');
+		}
+
+		//转到词条搜索页面
+		function fnSearch(){
+			window.open('http://www.baidu.com/s?wd=' + oTxt.value);
+		}
+
+		//上下方向键控制词条选中
+		function fnMove(keycode){
+			
+			var i, j, len = aLi.length;
+
+			for (i = 0; i < len; i++) {
+				
+				if(aLi[i].className == 'active'){
+					
+					for (j = 0; j < len; j++) {
+						aLi[j].className = '';
+					}
+
+					if(keycode == 38){
+						i ? aLi[i-1].className = 'active' : aLi[len-1].className = 'active';						
+					}else if(keycode == 40){
+						i == len-1 ? aLi[0].className = 'active' : aLi[i+1].className = 'active';
+					}else{
+						return;
+					}
+					break;
+				}
+			}
+
+			if(i == len) aLi[0].className = 'active';
+			
+			for (var i = 0; i < len; i++) {
+				if(aLi[i].className == 'active')
+					oTxt.value = aLi[i].innerText;
+			}
+			return;
+		}
+
+		var oBtn = $('btn');
+		var oTxt = $('txt');
+		var oUl = $('word');
+		var aLi;
+
+		//文本框键盘输入事件
+		oTxt.onkeyup = function(ev){
+			var i,j;
+			if(this.value === ''){
+				oUl.style.display = 'none';
+				return;
+			}
+
+			if(ev.keyCode >= 37 && ev.keyCode <= 40){
+				fnMove(ev.keyCode);
+				return false;
+			}
+
+			oUl.style.display = 'block';
+			var script = document.createElement('script');
+			script.src = `https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?wd=${this.value}&cb=callback`;
+			document.body.appendChild(script);
+			document.body.removeChild(script);
+
+		};
+
+		//阻止上方向键按下 光标默认移动到最前
+		oTxt.onkeydown = function(ev){
+			if(ev.keyCode == 38)
+				return false;
+		}
+
+		//搜索快捷键
+		document.onkeyup = function(ev){
+			if(ev.keyCode == 13)
+				fnSearch();
+		};
+
+		oBtn.onclick = fnSearch;
+
+	</script>
+</body>
+</html>
