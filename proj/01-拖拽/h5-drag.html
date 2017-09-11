@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>购物车</title>
+	<meta charset="utf-8">
+</head>
+<style type="text/css">
+	body, ul, li, p { margin: 0; padding: 0; }
+	ul { list-style: none; }
+	em { font-style: normal; }
+	.wrap { padding: 20px 0; font-family: Arial, 'microsoft yahei'; color: #444; }
+	.book { text-align: center; }
+	.book li { display: inline-block; width: 200px; padding: 10px; margin-right: 10px; margin-bottom: 10px; vertical-align: top; box-shadow: 0 0 6px rgba(0, 0, 0, .2); border-radius: 3px; }
+	.book .pic { width: 120px; height: 150px; border: 1px solid; }
+	.book .name { margin: 10px 0; font-size: 12px; }
+	.book .price { font-size: 12px; color: orange; text-align: right; }
+
+	.list { position: relative; width: 500px; height: 300px; margin: 0 auto; margin-top: 20px; padding: 10px; border: 2px dashed #EF9A9A; border-radius: 10px; }
+	.list li { width: 500px; height: 40px; font-size: 0; line-height: 2.5; border-bottom: 1px dashed #ccc; }
+	.list .title .price { color: #444; }
+	.list span { display: inline-block; font-size: 18px; }
+	.list .name { width: 300px; text-indent: 1em; }
+	.list .number, .list .price { width: 100px; text-align: center; }
+	.list .price { color: orange; }
+	.list .number { position: relative; }
+	.list .total { position: absolute; right: 10px; bottom: 10px; text-align: right; }
+</style>
+<body>
+	<div class="wrap">
+		<div class="book">
+			<ul>
+				<li>
+					<img class="pic" src="../img/book1.jpg">
+					<p class="name">JavaScript语言精粹</p>
+					<p class="price">￥30</p>
+				</li>
+				<li>
+					<img class="pic" src="../img/book2.jpg">
+					<p class="name">JavaScript权威指南</p>
+					<p class="price">￥120</p>
+				</li>
+				<li>
+					<img class="pic" src="../img/book3.jpg">
+					<p class="name">精通JavaScript</p>
+					<p class="price">￥35</p>
+				</li>
+				<li>
+					<img class="pic" src="../img/book4.jpg">
+					<p class="name">JavaScript编程艺术</p>
+					<p class="price">￥40</p>
+				</li>			
+			</ul>
+		</div>
+		<div class="list">
+			<ul>
+				<li class="title">
+					<span class="name">书名</span>
+					<span class="price">价格</span>
+					<span class="number">数量</span>
+				</li>
+
+				<li>
+					<span class="name">js高级程序设计</span>
+					<span class="price">￥99</span>
+					<span class="number">1</span>
+				</li>
+				<li>
+					<span class="name">ES6标准入门</span>
+					<span class="price">￥40</span>					
+					<span class="number">1</span>
+				</li>			
+			</ul>
+			<div class="total">合计：￥<em>0</em></div>
+		</div>		
+	</div>
+<script type="text/javascript">
+	
+	function getByClass(oParent, sClass) {
+    return oParent.getElementsByClassName(sClass);
+  }
+
+  function getByTag(oParent, sTag){
+  	return oParent.getElementsByTagName(sTag);
+  }
+
+  // createElements
+	function make(desc) {
+	  if (!Array.isArray(desc)) {
+	    return make.call(this, [].slice.call(arguments));
+	  }
+
+	  var name = desc[0];
+	  var attributes = desc[1];
+
+	  var el = document.createElement(name);
+
+	  var start = 1;
+	  if (typeof attributes === "object" && attributes !== null && !Array.isArray(attributes)) {
+	    for (var attr in attributes) {
+	      el[attr] = attributes[attr];
+	    }
+	    start = 2;
+	  }
+
+	  for (var i = start; i < desc.length; i++) {
+	    if (Array.isArray(desc[i])) {
+	      el.appendChild(make(desc[i]));
+	    }
+	    else {
+	      el.appendChild(document.createTextNode(desc[i]));
+	    }
+	  }
+
+	  return el;
+	}
+
+	function getTotal(){
+		var list = [];
+		var total = 0;
+
+  	for(i = 0; i < aList.length; i++){
+  		list[i] = {};
+  		list[i]['number'] = aNum[i].innerText;
+  		list[i]['price'] = aPrice[i].innerText.slice(1);
+ 		}
+
+ 		// 计算总价格
+ 		for(i = 1;i < aList.length; i++){
+ 			total += list[i]['number'] * list[i]['price'];
+ 		}
+
+  	oEm.innerText = total;
+	}
+
+  var oBook = getByClass(document, 'book')[0];
+  var aBook = getByTag(oBook, 'li');
+  var oList = getByClass(document, 'list')[0];
+  var aList = getByTag(oList, 'li');
+  var oUl = getByTag(oList, 'ul')[0];
+  var aName = getByClass(oList, 'name');
+  var aPrice = getByClass(oList, 'price');
+  var aNum = getByClass(oList, 'number');
+  var oTotal = getByClass(oList, 'total')[0];
+  var oEm = getByTag(oTotal, 'em')[0];
+  var sNum = 1;
+
+  getTotal();
+
+  //设置可拖拽属性 draggable
+  for (var i = 0; i < aBook.length; i++) {
+  	aBook[i].draggable = 'true';
+  	// 被拖拽元素开始拖拽
+  	aBook[i].ondragstart = function(ev){
+
+  		var oImg = getByClass(this, 'pic')[0];
+  		var aP = getByTag(this, 'p');
+  		ev.dataTransfer.setData('name', aP[0].innerText);
+  		ev.dataTransfer.setData('price', aP[1].innerText);
+  		ev.dataTransfer.setDragImage(oImg, 0, 0);
+  		
+  	};
+  }
+
+  //被拖拽元素进入目标区域
+  oList.ondragenter = oList.ondragover = function(ev){
+  	this.style.borderColor = '#F44336';
+  	ev.preventDefault();
+  };
+
+ 	//被拖拽元素离开目标区域
+  oList.ondragleave = function(){
+  	this.style.borderColor = '#EF9A9A';
+  };
+
+  //被拖拽元素在目标区域释放
+  oList.ondrop = function(ev){
+
+  	var sName = ev.dataTransfer.getData('name'), 
+  			sPrice = ev.dataTransfer.getData('price'), 
+  			idx;
+  	
+  	var list = [], //保存列表中 价格 数量映射
+  			bookArr = []; //保存列表中书名
+
+
+  	for(i = 0; i < aName.length; i++){
+  		bookArr.push(aName[i].innerText);
+  	}
+  	
+  	idx = bookArr.indexOf(sName);
+
+  	if(idx == -1){
+  		sNum = 1;
+  		var oLi = make(['li', ['span',{className: 'name'}, sName], ['span', {className: 'price'}, sPrice], ['span', {className: 'number'}, sNum]]);
+	  	
+	  	oUl.appendChild(oLi);
+  	}else{
+  		aNum[idx].innerText = ++sNum;
+  	}
+
+  	getTotal();
+
+  	this.style.borderColor = '#EF9A9A';
+  	ev.preventDefault();
+  };
+
+  for(i = 0; i < aList.length; i++){
+  	aList[i].onmouseover = function(){
+  		this.style.backgroundColor = '#eee';
+  	};
+  	aList[i].onmouseleave = function(){
+  		this.style.backgroundColor = '#fff';
+  	}
+  }
+
+</script>
+</body>
+</html>
