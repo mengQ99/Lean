@@ -273,3 +273,26 @@ if (!String.prototype.capitalize) {
         return arr.join(' ');
     };
 }
+//数组随机排序 返回随机排序后的新数组 不改变原数组
+if(!Array.prototype.randomSort){
+    Array.prototype.randomSort = function(){
+        //复制this 保证不改变原数组
+        var _this = JSON.parse(JSON.stringify(this));
+        var arr = [];
+        while(_this.length > 0){
+            var r = parseInt(Math.random() * _this.length);
+            arr.push(oldArr[i]);
+            _this.splice(r, 1);
+        }
+        return arr;
+    }
+}
+//数组去重 不改变原数组
+if(!Array.prototype.unique){
+    Array.prototype.unique = function(){
+        var arr = this;
+        return this.filter(function(index, ele, arr) {
+            return arr.indexOf(ele) === idx;
+        });
+    }
+}
