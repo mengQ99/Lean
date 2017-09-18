@@ -235,6 +235,19 @@
         }
         //返回 name:value 键值对的数组
         return args;
+    },
+    //数组扁平化
+    flat: function (arr) {
+        var result = [];
+        for (var i = 0, len = arr.length; i < len; i++) {
+            if (Array.isArray(arr[i])) {
+                result = result.concat(flat(arr[i]))
+            }
+            else {
+                result.push(arr[i])
+            }
+        }
+        return result;
     }
 };
 
