@@ -248,6 +248,39 @@
             }
         }
         return result;
+    },
+    // 递归创建DOM片段 stackoverflow上看到的一个方法
+    // makeElement(["p", "Here is a ", ["a", { href:"http://www.google.com/" }, "link"], "."]);
+    // =>  <p>Here is a <a href="http://www.google.com/">link</a>.</p>
+    makeElement: function (desc) {
+
+        if (!Array.isArray(desc)) {
+            return makeElement.call(this, Array.prototype.slice.call(arguments));
+        }
+
+        var name = desc[0];
+        var attributes = desc[1];
+
+        var ele = document.createElement(name);
+
+        var start = 1;
+        if (typeof attributes === "object" && attributes !== null && !Array.isArray(attributes)) {
+            for (var attr in attributes) {
+                ele[attr] = attributes[attr];
+            }
+            start = 2;
+        }
+
+        for (var i = start; i < desc.length; i++) {
+            if (Array.isArray(desc[i])) {
+                ele.appendChild(makeElement(desc[i]));
+            }
+            else {
+                ele.appendChild(document.createTextNode(desc[i]));
+            }
+        }
+
+        return ele;
     }
 };
 
