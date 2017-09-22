@@ -289,7 +289,7 @@ if (!Array.prototype.allIndexOf) {
     Array.prototype.allIndexOf = function (ele) {
         var arr = [];
         var index = this.indexOf(ele);
-        while (index !== 1) {
+        while (index !== -1) {
             arr.push(index);
             index = this.indexOf(ele, index + 1);
             //index = index > 0 ? this.lastIndexOf(ele, index - 1) : -1;
@@ -337,8 +337,8 @@ if(!Array.prototype.randomSort){
 if(!Array.prototype.unique){
     Array.prototype.unique = function(){
         var arr = this;
-        return this.filter(function(index, ele, arr) {
-            return arr.indexOf(ele) === idx;
+        return this.filter(function(ele, index, arr) {
+            return arr.indexOf(ele) === index;
         });
     }
 }
